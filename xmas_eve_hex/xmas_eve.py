@@ -22,11 +22,41 @@ def check_black_tile(x, y, flip_dict):
         return flip_dict[pos_builder(x, y)]
     return False
 
+
+def neighbor_flip(pos, flip_dict, new_flip_dict):
+    n_count = neighbor_count(pos, flip_dict)
+    if n_count == 2:
+        new_flip_dict[pos_builder(pos[0], pos[1])] = True
+        return
+    if pos_builder(pos[0], pos[1]) in flip_dict:
+        if pos_builder(pos[0], pos[1]):
+            if n_count == 1:
+                new_flip_dict[pos_builder(pos[0], pos[1])] = True
+                return
+
+
 def neighbor_checker(pos, flip_dict):
     # Only put in new true black to the dict
 
     new_flip_dict = {}
 
+    ne_pos = [pos[0] + 1, pos[1] + 1]
+    nw_pos = [pos[0] - 1, pos[1] + 1]
+    se_pos = [pos[0] + 1, pos[1] - 1]
+    sw_pos = [pos[0] + 1, pos[1] - 1]
+    e_pos = [pos[0] + 2, pos[1]]
+    w_pos = [pos[0] - 2, pos[1]]
+
+    neighbor_flip(pos, flip_dict, new_flip_dict)
+
+    neighbor_flip(ne_pos, flip_dict, new_flip_dict)
+    neighbor_flip(nw_pos, flip_dict, new_flip_dict)
+    neighbor_flip(se_pos, flip_dict, new_flip_dict)
+    neighbor_flip(sw_pos, flip_dict, new_flip_dict)
+    neighbor_flip(e_pos, flip_dict, new_flip_dict)
+    neighbor_flip(w_pos, flip_dict, new_flip_dict)
+
+    return new_flip_dict
 
 
 def neighbor_count(pos, flip_dict):
@@ -34,8 +64,6 @@ def neighbor_count(pos, flip_dict):
 
     x = pos[0]
     y = pos[1]
-
-    # print(check_black_tile(x - 2, y, flip_dict))
 
     # LEFT
     if check_black_tile(x - 2, y, flip_dict):
@@ -59,18 +87,12 @@ def neighbor_count(pos, flip_dict):
     return count
 
 
-
-    # print (count)
-
-
 def main():
-    with open('input_ex.txt') as f:
+    with open('input.txt') as f:
 
         origin = [0, 0]
 
-        flip_dict = {
-
-        }
+        flip_dict = {}
 
         lines = f.readlines()
 
@@ -107,60 +129,28 @@ def main():
                 i += 1
 
             flip_tile(to_flip_pos, flip_dict)
-        #pprint(flip_dict)
+        # pprint(flip_dict)
 
         count = 0
 
+        black_tiles = {}
+
         for tile in flip_dict:
             if flip_dict[tile]:
+                black_tiles[tile] = True
                 count += 1
 
-        print(count)
+        for gen in range(1, 101):
 
-        min_x = 0
-        max_x = 0
-        min_y = 0
-        max_y = 0
+            new_flip_dict = {}
+            for tile in black_tiles:
 
-        for i in range(1, 101):
-            for tile in flip_dict:
-                if eval(tile)[0] < min_x:
-                    min_x = eval(tile)[0]
-                elif eval(tile)[0] > max_x:
-                    max_x = eval(tile)[0]
-                elif eval(tile)[1] > max_y:
-                    max_y = eval(tile)[1]
-                elif eval(tile)[1] < min_y:
-                    min_y = eval(tile)[1]
+                for black_tile in neighbor_checker(eval(tile), black_tiles.copy()):
+                    new_flip_dict[black_tile] = True
 
-            new_flip_dict = flip_dict.copy()
+            black_tiles = new_flip_dict
 
-            for row in range(min_y - 1, max_y + 1):
-                for col in range(min_x - 2, max_x + 2):
-                    n_count = neighbor_count(eval(pos_builder(col, row)), flip_dict.copy())
-
-                    #print(f"ncount {n_count}")
-                    if pos_builder(col, row) in flip_dict:
-                        if (not flip_dict[pos_builder(col, row)]) and n_count == 2:
-                            new_flip_dict[pos_builder(col, row)] = True
-                        elif flip_dict[pos_builder(col, row)] and (n_count == 0 or n_count > 2):
-                            new_flip_dict[pos_builder(col, row)] = False
-                    else:
-                        if n_count == 2:
-                            #print('New flipper')
-                            new_flip_dict[pos_builder(col, row)] = True
-                        else:
-                            new_flip_dict[pos_builder(col, row)] = False
-
-            flip_dict = new_flip_dict.copy()
-
-            #pprint(flip_dict)
-            count = 0
-
-            for tile in flip_dict:
-                if flip_dict[tile]:
-                    count += 1
-            print(f"day {i} : {count} ")
+            print(f"day {gen} : {len(new_flip_dict)} ")
 
 
 if __name__ == '__main__':
