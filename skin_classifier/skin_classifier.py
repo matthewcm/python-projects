@@ -1,92 +1,261 @@
-import numpy as np
-import pandas as pd
 import math
 
-corbyn_data = np.array([[13, 10], [15, 12], [14, 11], [15, 11]])
-corbyn = pd.DataFrame(data=corbyn_data, columns=["Area", "Weight"])
-
-boris_data = np.array([
-    [18, 13],
-    [17, 13],
-    [16, 12],
-    [18, 14]
-])
-boris = pd.DataFrame(data=boris_data, columns=["Area", "Weight"])
+import numpy as np
+import pandas as pd
 
 
+def variance(c, column):
+    v = c[column].var(ddof=False)
 
-def column_stuff(c, column):
+    print('variance: ' + str(v))
+    return v
+
+
+def mean(c, column):
     print(c)
 
-    mean = c[column].sum()/c[column].size
-    print('mean: ' + str(mean))
+    m = c[column].sum() / c[column].size
+    print('mean: ' + str(m))
 
-    variance = c[column].var(ddof=False)
+    return m
 
-    print('variance: ' +str(variance))
-    # for i in range(0, c['Area'].)
-    # mean=O
-    return {'mean':mean, 'variance':variance}
 
-def calculate_probability( x, mean, variance ):
+def calculate_probability(x, mean, variance):
     exponent = math.exp(-((x - mean) ** 2 / (2 * variance)))
 
     return (1 / math.sqrt(2 * math.pi * variance)) * exponent
 
 
-def bayesian_classifier(x, c1=corbyn, c2=boris):
-    c1_area = column_stuff(c1, 'Area')
-    c1_weight = column_stuff(c1, 'Weight')
-    c2_area =column_stuff(c2, 'Area')
-    c2_weight =column_stuff(c2, 'Weight')
+def calculate_prob_of_x_given_c(x, c):
+    c_data = np.array([])
+
+    for (index, column) in enumerate(c.columns):
+        mean_ = mean(c, column)
+        variance_ = variance(c, column)
+
+        p_x1_given_c = (calculate_probability(x[index], mean_, variance_))
+
+        print(p_x1_given_c)
+        c_data = np.append(c_data, p_x1_given_c)
+
+    print(c_data)
+    return np.prod(c_data)
 
 
-    p_x1_given_c1 = (calculate_probability(x[0], c1_area['mean'], c1_area['variance']))
-    p_x2_given_c1 = (calculate_probability(x[1], c1_weight['mean'], c1_weight['variance']))
+def bayesian_classifier(x, c1, c2):
+    prod_c1 = calculate_prob_of_x_given_c(x, c1)
+    print('prod_c1: ' + str(prod_c1))
+    prod_c2 = calculate_prob_of_x_given_c(x, c2)
 
-    print(p_x1_given_c1)
-    print(p_x2_given_c1)
+    print('prod_c2: ' + str(prod_c2))
 
-    p_c1_both = p_x1_given_c1 * p_x2_given_c1
-
-    print(p_c1_both)
-
-    print()
-    p_x1_given_c2 = (calculate_probability(x[0], c2_area['mean'], c2_area['variance']))
-    p_x2_given_c2 = (calculate_probability(x[1], c2_weight['mean'], c2_weight['variance']))
-
-    print(p_x1_given_c2)
-    print(p_x2_given_c2)
-
-    p_c2_both = p_x1_given_c2 * p_x2_given_c2
-    print(p_c2_both)
-
-
-    p_x_given_c1_p_c = p_c1_both * (c1.size / (c1.size + c2.size))
-    p_x_given_c2_p_c = p_c2_both * (c2.size / (c1.size + c2.size))
+    p_x_given_c1_p_c = prod_c1 * (c1.size / (c1.size + c2.size))
+    p_x_given_c2_p_c = prod_c2 * (c2.size / (c1.size + c2.size))
 
     print()
     print(p_x_given_c1_p_c)
     print(p_x_given_c2_p_c)
 
-    if p_x_given_c1_p_c > p_x_given_c2_p_c:
-        print('CORBYN')
-    else:
-        print('BORIS')
-
-
-
+    return p_x_given_c1_p_c > p_x_given_c2_p_c
 
 
 def app():
-    print("corbyn")
-    print(corbyn)
-    print("boris")
-    print(boris)
+    skin_samples_data = np.array([
+        [139, 76, 59],
+        [220, 142, 104],
+        [159, 98, 51],
+        [223, 153, 104],
+        [253, 195, 158],
+        [228, 167, 120],
+        [232, 186, 171],
+        [209, 146, 113],
+        [148, 97, 54],
+        [223, 149, 100],
+        [234, 187, 171],
+        [228, 172, 123],
+        [251, 211, 201],
+        [140, 93, 51],
+        [223, 158, 126],
+        [225, 154, 102],
+        [217, 158, 124],
+        [215, 139, 87],
+        [149, 103, 51],
+        [157, 105, 48],
+        [210, 153, 123],
+        [198, 124, 61],
+        [254, 190, 152],
+        [234, 190, 155],
+        [240, 187, 171],
+    ])
+    skin_samples = pd.DataFrame(data=skin_samples_data, columns=["Red", "Green", "Blue"])
+
+    non_skin_samples_data = np.array([
+        [3, 14, 16],
+        [84, 68, 115],
+        [121, 172, 173],
+        [152, 193, 195],
+        [112, 158, 156],
+        [93, 147, 149],
+        [144, 185, 187],
+        [88, 136, 150],
+        [93, 139, 137],
+        [250, 247, 242],
+        [19, 29, 98],
+        [129, 174, 177],
+        [102, 132, 0],
+        [201, 54, 60],
+        [32, 82, 81],
+        [61, 107, 105],
+        [88, 156, 227],
+        [11, 31, 32],
+        [145, 186, 188],
+        [104, 124, 249],
+        [254, 193, 14],
+        [135, 180, 185],
+        [100, 127, 32],
+        [163, 198, 200],
+        [127, 175, 177],
+    ])
+    non_skin_samples_data_2 = np.array([
+        [3, 14, 16],
+        [84, 68, 115],
+        [121, 172, 173],
+        [152, 193, 195],
+        [112, 158, 156],
+        [93, 147, 149],
+        [144, 185, 187],
+        [88, 136, 150],
+        [93, 139, 137],
+        [250, 247, 242],
+        [19, 29, 98],
+        [129, 174, 177],
+        [102, 132, 0],
+        [201, 54, 60],
+        [32, 82, 81],
+        [61, 107, 105],
+        [88, 156, 227],
+        [11, 31, 32],
+        [145, 186, 188],
+        [104, 124, 249],
+        [254, 193, 14],
+        [135, 180, 185],
+        [100, 127, 32],
+        [163, 198, 200],
+        [127, 175, 177],
+        [3, 14, 16],
+        [84, 68, 115],
+        [121, 172, 173],
+        [152, 193, 195],
+        [112, 158, 156],
+        [93, 147, 149],
+        [144, 185, 187],
+        [88, 136, 150],
+        [93, 139, 137],
+        [250, 247, 242],
+        [19, 29, 98],
+        [129, 174, 177],
+        [102, 132, 0],
+        [201, 54, 60],
+        [32, 82, 81],
+        [61, 107, 105],
+        [88, 156, 227],
+        [11, 31, 32],
+        [145, 186, 188],
+        [104, 124, 249],
+        [254, 193, 14],
+        [135, 180, 185],
+        [100, 127, 32],
+        [163, 198, 200],
+        [127, 175, 177],
+        [3, 14, 16],
+        [84, 68, 115],
+        [121, 172, 173],
+        [152, 193, 195],
+        [112, 158, 156],
+        [93, 147, 149],
+        [144, 185, 187],
+        [88, 136, 150],
+        [93, 139, 137],
+        [250, 247, 242],
+        [19, 29, 98],
+        [129, 174, 177],
+        [102, 132, 0],
+        [201, 54, 60],
+        [32, 82, 81],
+        [61, 107, 105],
+        [88, 156, 227],
+        [11, 31, 32],
+        [145, 186, 188],
+        [104, 124, 249],
+        [254, 193, 14],
+        [135, 180, 185],
+        [100, 127, 32],
+        [163, 198, 200],
+        [127, 175, 177],
+        [3, 14, 16],
+        [84, 68, 115],
+        [121, 172, 173],
+        [152, 193, 195],
+        [112, 158, 156],
+        [93, 147, 149],
+        [144, 185, 187],
+        [88, 136, 150],
+        [93, 139, 137],
+        [250, 247, 242],
+        [19, 29, 98],
+        [129, 174, 177],
+        [102, 132, 0],
+        [201, 54, 60],
+        [32, 82, 81],
+        [61, 107, 105],
+        [88, 156, 227],
+        [11, 31, 32],
+        [145, 186, 188],
+        [104, 124, 249],
+        [254, 193, 14],
+        [135, 180, 185],
+        [100, 127, 32],
+        [163, 198, 200],
+        [127, 175, 177],
+        [3, 14, 16],
+        [84, 68, 115],
+        [121, 172, 173],
+        [152, 193, 195],
+        [112, 158, 156],
+        [93, 147, 149],
+        [144, 185, 187],
+        [88, 136, 150],
+        [93, 139, 137],
+        [250, 247, 242],
+        [19, 29, 98],
+        [129, 174, 177],
+        [102, 132, 0],
+        [201, 54, 60],
+        [32, 82, 81],
+        [61, 107, 105],
+        [88, 156, 227],
+        [11, 31, 32],
+        [145, 186, 188],
+        [104, 124, 249],
+        [254, 193, 14],
+        [135, 180, 185],
+        [100, 127, 32],
+        [163, 198, 200],
+        [127, 175, 177],
+
+    ])
+    non_skin_samples = pd.DataFrame(data=non_skin_samples_data, columns=["Red", "Green", "Blue"])
 
     print('')
-    bayesian_classifier([16,11])
+    if bayesian_classifier([197, 140, 95], skin_samples, non_skin_samples):
+        print('SKIN')
+    else:
+        print('NON SKIN')
 
+    if bayesian_classifier([175, 122, 91], skin_samples, non_skin_samples):
+        print('SKIN')
+    else:
+        print('NON SKIN')
 
 
 if __name__ == '__main__':
