@@ -49,8 +49,8 @@ def bayesian_classifier(x, c1, c2):
 
     print('prod_c2: ' + str(prod_c2))
 
-    p_x_given_c1_p_c = prod_c1 * (c1.size / (c1.size + c2.size))
-    p_x_given_c2_p_c = prod_c2 * (c2.size / (c1.size + c2.size))
+    p_x_given_c1_p_c = prod_c1 * (1/6)
+    p_x_given_c2_p_c = prod_c2 * (5/6)
 
     print()
     print(p_x_given_c1_p_c)
@@ -252,10 +252,10 @@ def app():
     else:
         print('NON SKIN')
 
-    if bayesian_classifier([175, 122, 91], skin_samples, non_skin_samples):
-        print('SKIN')
-    else:
-        print('NON SKIN')
+    # if bayesian_classifier([175, 122, 91], skin_samples, non_skin_samples):
+    #     print('SKIN')
+    # else:
+    #     print('NON SKIN')
 
 
 if __name__ == '__main__':
